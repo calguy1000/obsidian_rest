@@ -34,6 +34,11 @@ class VaultController {
         }
     }
 
+    private getDailyFileName(): string {
+        const today = new Date().toISOString().split('T')[0];
+        return `${today}.md`;
+    }
+
     public listFiles(req: Request, res: Response): Response {
         try {
             const files = fs.readdirSync(this.vaultPath);
@@ -184,6 +189,47 @@ class VaultController {
             return res.status(201).json({ message: 'File created successfully' });
         } catch (err) {
             return res.status(500).json({ message: 'Error creating file' });
+        }
+    }
+
+    public getDailyFile(req: Request, res: Response): Response {
+        const dailyFileName = this.getDailyFileName();
+        const filePath = path.join(this.vaultPath, dailyFileName);
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: 'Daily file not found' });
+        }
+
+        try {
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            return res.status(200).json({ content: fileContent });
+        } catch (err) {
+            return res.status(500).json({ message: 'Error reading daily file' });
+        }
+    }
+
+    public appendDailyFile(req: Request, res: Response): Response {
+        const { content, withtime = true } = req.body;
+        const dailyFileName = this.getDailyFileName();
+        const filePath = path.join(this.vaultPath, dailyFileName);
+
+        if (typeof content !== 'string' || content.length > 1024) {
+            return res.status(400).json({ message: 'Invalid content' });
+        }
+
+        let contentToAppend = content;
+        if (withtime) {
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0].slice(0, 5); // HH:MM format
+            contentToAppend = `${timeString} ${content}`;
+        }
+        contentToAppend = `- ${contentToAppend}\n`;
+
+        try {
+            fs.appendFileSync(filePath, contentToAppend);
+            return res.status(200).json({ message: 'Content appended successfully' });
+        } catch (err) {
+            return res.status(500).json({ message: 'Error appending to daily file' });
         }
     }
 }
