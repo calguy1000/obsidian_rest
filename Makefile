@@ -18,7 +18,6 @@ down stop:
 	docker compose down
 
 rebuild:
-
 	docker compose up --build --force-recreate
 
 shell: start
