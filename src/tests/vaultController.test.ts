@@ -113,3 +113,82 @@ describe('VaultController', () => {
 
     // Add more tests as needed
 });
+
+describe('VaultController - Daily File Routes', () => {
+    const dailyFileName = new Date().toISOString().split('T')[0] + '.md';
+    const dailyFilePath = path.join(config.obsidianVaultPath, dailyFileName);
+
+    beforeAll(() => {
+        // Ensure the vault directory exists
+        if (!fs.existsSync(config.obsidianVaultPath)) {
+            fs.mkdirSync(config.obsidianVaultPath, { recursive: true });
+        }
+    });
+
+    afterEach(() => {
+        // Clean up the daily file after each test
+        if (fs.existsSync(dailyFilePath)) {
+            fs.unlinkSync(dailyFilePath);
+        }
+    });
+
+    it('should return 404 if daily file does not exist', async () => {
+        const response = await request(app)
+            .get('/api/vault/daily')
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('Daily file not found');
+    });
+
+    it('should return the content of the daily file if it exists', async () => {
+        fs.writeFileSync(dailyFilePath, '# Daily Note\n');
+        const response = await request(app)
+            .get('/api/vault/daily')
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(response.status).toBe(200);
+        expect(response.body.content).toBe('# Daily Note\n');
+    });
+
+    it('should append content to the daily file with timestamp', async () => {
+        const content = 'New entry';
+        const response = await request(app)
+            .patch('/api/vault/daily')
+            .send({ content, withtime: true })
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Content appended successfully');
+
+        const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
+        const now = new Date();
+        const timeString = now.toTimeString().split(' ')[0].slice(0, 5); // HH:MM format
+        expect(fileContent).toContain(`- ${timeString} ${content}\n`);
+    });
+
+    it('should append content to the daily file without timestamp', async () => {
+        const content = 'New entry';
+        const response = await request(app)
+            .patch('/api/vault/daily')
+            .send({ content, withtime: false })
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Content appended successfully');
+
+        const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
+        expect(fileContent).toContain(`- ${content}\n`);
+    });
+
+    it('should create a new daily file with title if it does not exist', async () => {
+        const content = 'First entry';
+        const response = await request(app)
+            .patch('/api/vault/daily')
+            .send({ content, withtime: false })
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Content appended successfully');
+
+        const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
+        const today = new Date().toISOString().split('T')[0];
+        expect(fileContent).toContain(`# ${today}\n`);
+        expect(fileContent).toContain(`- ${content}\n`);
+    });
+});

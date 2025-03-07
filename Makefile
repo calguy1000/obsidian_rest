@@ -7,7 +7,7 @@ server app:
 
 tests:
 	# run the tests
-	mkdir test_vault && touch test_vault/empty.md
+	-mkdir test_vault && touch test_vault/empty.md
 	docker compose run --rm --entrypoint "npm run test" app
 	rm -rf test_vault
 
