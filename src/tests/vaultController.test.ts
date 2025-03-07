@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 
 const config = { 
-    obsidianVaultPath: '/app/vault', // Ensure this directory exists and is writable
+    obsidianVaultPath: '/app/test_vault', // Ensure this directory exists and is writable
     privateDir: '/app/private',
     apiKey: 'testapikey',
 };

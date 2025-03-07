@@ -4,7 +4,10 @@ import jwt from 'jsonwebtoken';
 import authMiddleware from '../../middleware/authMiddleware';
 
 const app = express();
-const config = { apiKey: 'testapikey' };
+const config = {
+    apiKey: 'testapikey',
+    privateDir: '/app/private',
+};
 app.use(authMiddleware(config));
 
 app.get('/test', (req, res) => {

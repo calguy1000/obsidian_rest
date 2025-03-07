@@ -1,4 +1,5 @@
 node_modules/
-vault/
-test_vault
+test_vault/
+.env
+private/
 

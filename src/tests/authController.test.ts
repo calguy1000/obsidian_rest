@@ -10,7 +10,7 @@ app.use(express.json());
 
 const config = { 
     apiKey: 'testapikey',
-    privateDir: './', // Ensure this directory exists and is writable
+    privateDir: '/app/private', // Ensure this directory exists and is writable
 };
 const authController = new AuthController(config);
 app.use('/auth', authRoutes(authController, express.Router()));
