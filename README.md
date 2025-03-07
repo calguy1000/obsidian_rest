@@ -2,6 +2,11 @@
 
 This project is an Express application running in a Docker environment. It provides a simple API for file management with shared key authentication.
 
+This project does not provide an Obsidian plugin.  It directly modifies the markdown files of an Obsidian vault.
+
+I wrote this package in order to be able to play with my obsidian vault from within an alexa skill so it has only the functionality I thought that I may need.  I also wrote this project because at the same time I was experimenting with node.js, express and all of that, alexa skills (python) and
+docker/docker-compose.  I have attempted to provide a reasonable amount of documentation, however your mileage may vary.
+
 ## Features
 
 - List files
@@ -15,15 +20,19 @@ This project is an Express application running in a Docker environment. It provi
 
 - Node.js
 - Express
+- jest
 - TypeScript
 - Docker
-
-## Getting Started
+- Docker-compose
+- jwt
 
 ### Prerequisites
 
 - Docker
 - Docker Compose
+- gnu make
+- openssl binaries (for setting the initial pre-shared key)
+- A working obsidian vault
 
 ### Installation
 
@@ -39,22 +48,38 @@ This project is an Express application running in a Docker environment. It provi
    cd obsidian_rest
    ```
 
-3. Build the Docker image:
+3. Setup the environment
 
-   ```
-   docker-compose build
-   ```
+    - build the required directories and generate a preshared key
+      ```
+      make setup
+      ```
+    - change the  'docker-compose.yml' volume to point to your vault.  i.e:
+      ```
+      - "/home/rob/Documents/My Vault:/vault
+      ```
+    - build the container and run the server
+      ```
+      make server
+      ```
+        The application will be available at `http://localhost:3000`.
 
-### Running the Application
+### Authentication
 
-To start the application, run:
+The application uses shared key authentication. A random pre-shared key is generated on setup and stored in the .env file.  You must use this when configuring your client.
 
-```
-make creaetkey
-make run
-```
+### Security
 
-The application will be available at `http://localhost:3000`.
+This application is not to be considered as secure.  It is for use in home labs, or over other secured connections (secure tunnels, vpn's etc).  
+However, some small steps have been taken to provide a level of security:
+    - A random pre-shared key is generated on initial setup
+    - This pre-shared key must be provided to the /auth method in order to receive an authorization token
+    - The authorization token is only valid for 30 minutes.
+    - Only one authorization token is provided at a time.  i.e: it is stored as a static file in the private web directory.  
+      If another account tries to create one (assuming they got the pre-shared key), if a token existed and was not expired, 
+      the request wouuld fail.
+    - If the pre-shared key changes on the server side, the authorization token is invalidated.  If you feel your site has been
+      compromised, change the pre-shared key by running 'make genkey'
 
 ### API Endpoints
 
@@ -119,10 +144,6 @@ The application will be available at `http://localhost:3000`.
     - `400 Bad Request`: `{ "message": "Invalid file name" }`
     - `409 Conflict`: `{ "message": "File already exists" }`
     - `500 Internal Server Error`: `{ "message": "Error creating file" }`
-
-### Authentication
-
-The application uses shared key authentication. Include the following header in your requests
 
 ### License
 
