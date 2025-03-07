@@ -226,6 +226,10 @@ class VaultController {
         contentToAppend = `- ${contentToAppend}\n`;
 
         try {
+            if (!fs.existsSync(filePath)) {
+                const today = new Date().toISOString().split('T')[0];
+                fs.writeFileSync(filePath, `# ${today}\n`);
+            }
             fs.appendFileSync(filePath, contentToAppend);
             return res.status(200).json({ message: 'Content appended successfully' });
         } catch (err) {

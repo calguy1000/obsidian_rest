@@ -13,6 +13,9 @@ const vaultRoutes = (authMiddleware: any, vaultController: VaultController, rout
     router.delete('/vault/:filename', vaultController.deleteFile.bind(vaultController));
     router.post('/vault', vaultController.createFile.bind(vaultController));
 
+    router.get('/vault/daily', vaultController.getDailyFile.bind(vaultController));
+    router.patch('/vault/daily', vaultController.appendDailyFile.bind(vaultController));
+
     return router;
 };
 
