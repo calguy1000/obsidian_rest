@@ -1,0 +1,21 @@
+services:
+  app:
+    container_name: my-express-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./:/app
+      - "/home/rob/Documents/My Vault:/vault"
+    environment:
+      - NODE_ENV=development
+      - API_KEY=ASDFSDFFASDFGASASDFKASDFASDHKDBCVBERTSSXMDFLPOUJF1
+      - OBSIDIAN_VAULT_PATH=/vault
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
