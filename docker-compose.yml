@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: my-express-app
+    container_name: obsidian_rest
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,8 +11,9 @@ services:
       - "/home/rob/Documents/My Vault:/vault"
     environment:
       - NODE_ENV=development
-      - API_KEY=ASDFSDFFASDFGASASDFKASDFASDHKDBCVBERTSSXMDFLPOUJF1
       - OBSIDIAN_VAULT_PATH=/vault
+    env_file:
+      - .env
     networks:
       - app-network
 
