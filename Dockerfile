@@ -18,7 +18,7 @@ COPY . .
 
 # Expose the port the app runs on
 # this is just for demonstration, the exposure is set in the docker-compose file
-EXPOSE 3000
+#EXPOSE 3000
 
 # Command to run the application
 CMD ["tail", "-f", "/dev/null"]

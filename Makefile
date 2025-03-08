@@ -3,12 +3,12 @@ CONTAINER=obsidian_rest
 
 server app:
 	# run a container and automatically start the server
-	docker compose run --rm --entrypoint "npm run start" app
+	docker exec -it ${CONTAINER} npm run start
 
 tests:
 	# run the tests
 	-mkdir test_vault && touch test_vault/empty.md
-	docker compose run --rm --entrypoint "npm run test" app
+	docker exec -it ${CONTAINER} npm run test 
 	rm -rf test_vault
 
 start:
@@ -27,7 +27,7 @@ down stop:
 	# stop the services...
 	docker compose down
 
-rebuild:
+rebuild: down
 	docker compose up --build --force-recreate
 
 shell: start
