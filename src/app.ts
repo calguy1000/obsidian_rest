@@ -12,11 +12,13 @@ import logger from './utils/logger';
 const app = express();
 const port = process.env.PORT || 3000;
 
+/*
 // Middleware to log incoming requests
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
     logger.info(`${req.method} ${req.url}`);
     next();
 });
+*/
 
 const config = checkEnvVariables();
 

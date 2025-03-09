@@ -37,7 +37,7 @@ const authMiddleware = (config: Config) => {
             return next();
         });
 
-        return next();
+        //return next();
     };
 };
 

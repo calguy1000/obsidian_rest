@@ -274,11 +274,11 @@ class VaultController {
                 else {
                     const today = new Date().toISOString().split('T')[0];
                     fs.writeFileSync(filePath, `# ${today}\n`);
+
                 }
                 fs.appendFileSync(filePath, contentToAppend);
                 const statusCode = isNewFile ? 201 : 200;
                 return res.status(statusCode).json({ message: 'Content appended successfully' });
-                return res.status(200).json({ message: 'Content appended successfully' });
             } catch (err) {
                 logger.error('Error appending to daily file', err);
                 return res.status(500).json({ message: 'Error appending to daily file' });
