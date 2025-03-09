@@ -221,11 +221,13 @@ class VaultController {
     }
 
     public appendDailyFile(req: Request, res: Response): Response {
-        const { content, withtime = true } = req.body;
+        logger.info('Appending to daily file');
+        const { content, withtime = true } = req.body as { content: string, withtime?: boolean };
         const dailyFileName = this.getDailyFileName();
         const filePath = path.join(this.vaultPath, dailyFileName);
 
         if (typeof content !== 'string' || content.length > 1024) {
+            logger.error('Invalid content:', content);
             return res.status(400).json({ message: 'Invalid content' });
         }
 

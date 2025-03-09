@@ -9,8 +9,11 @@
             "type": "node",
             "request": "launch",
             "args": [
-                "${relativeFile}"
+                "app.ts"
             ],
+	    "env": {
+		"DEBUG": "express:*"
+	    },
             "runtimeArgs": [
                 "-r",
                 "ts-node/register"

@@ -12,6 +12,12 @@ import logger from './utils/logger';
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware to log incoming requests
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    logger.info(`${req.method} ${req.url}`);
+    next();
+});
+
 const config = checkEnvVariables();
 
 const authController = new AuthController(config);
@@ -29,8 +35,13 @@ app.use(express.json());
 app.use(express.static('public'));
 
 //app.use('/', landingRoutes);
+
+app.get('/foo', (req: express.Request, res: express.Response) => {
+    res.send('<html><body><h1>Hello, World!</h1></body></html>');
+});
+
 app.use('/auth', authRoutes(authController, express.Router()));
-app.use('/api', vaultRoutes(authMiddleware, vaultController, express.Router()));
+app.use('/api', vaultRoutes(authMiddlewareInstance, vaultController, express.Router()));
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

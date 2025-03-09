@@ -7,12 +7,12 @@ const vaultRoutes = (authMiddleware: any, vaultController: VaultController, rout
     router.use(authMiddleware);
     router.use(express.json()); // Ensure all requests are JSON
 
-    router.get('/vault', vaultController.listFiles.bind(vaultController));
-    router.get('/vault/daily', vaultController.getDailyFile.bind(vaultController));
     router.patch('/vault/daily', vaultController.appendDailyFile.bind(vaultController));
+    router.get('/vault/daily', vaultController.getDailyFile.bind(vaultController));
     router.get('/vault/:filename', vaultController.getFile.bind(vaultController));
     router.patch('/vault/:filename', vaultController.appendFile.bind(vaultController));
     router.delete('/vault/:filename', vaultController.deleteFile.bind(vaultController));
+    router.get('/vault', vaultController.listFiles.bind(vaultController));
     router.post('/vault', vaultController.createFile.bind(vaultController));
 
     return router;
