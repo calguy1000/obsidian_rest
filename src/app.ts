@@ -33,7 +33,7 @@ app.use('/auth', authRoutes(authController, express.Router()));
 app.use('/api', vaultRoutes(authMiddleware, vaultController, express.Router()));
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     logger.error(err.stack);
     res.status(500).send('Something broke!');
 });

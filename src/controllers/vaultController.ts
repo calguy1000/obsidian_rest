@@ -14,7 +14,6 @@ class VaultController {
 
     constructor(config: Config) {
         this.vaultPath = config.obsidianVaultPath;
-        process.stdout.write('Vault path: ' + __dirname + "/" + this.vaultPath + "\n");
         if (!this.vaultPath || !fs.existsSync(this.vaultPath) || !fs.lstatSync(this.vaultPath).isDirectory()) {
             const error = new Error('The vault path must be set to a valid directory');
             logger.error(error.message);
