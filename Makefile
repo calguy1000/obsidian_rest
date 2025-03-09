@@ -3,6 +3,9 @@ CONTAINER=obsidian_rest
 
 server app:
 	# run a container and automatically start the server
+	docker exec -it ${CONTAINER} npm run start
+
+debug-server:
 	docker exec -it -e DEBUG=* ${CONTAINER} npm run start
 
 tests:
