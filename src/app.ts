@@ -7,6 +7,7 @@ import { checkEnvVariables } from './utils/envChecks';
 import AuthController from './controllers/authController';
 import VaultController from './controllers/vaultController';
 import authMiddleware from './middleware/authMiddleware';
+import logger from './utils/logger';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -31,8 +32,14 @@ app.use(express.static('public'));
 app.use('/auth', authRoutes(authController, express.Router()));
 app.use('/api', vaultRoutes(authMiddleware, vaultController, express.Router()));
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    logger.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    logger.info(`Server is running on port ${port}`);
 });
 
 export default app;

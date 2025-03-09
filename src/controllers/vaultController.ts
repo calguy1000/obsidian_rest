@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import fs from 'fs';
 import path from 'path';
+import logger from '../utils/logger';
 
 interface Config {
     apiKey: string;
@@ -15,13 +16,17 @@ class VaultController {
         this.vaultPath = config.obsidianVaultPath;
         process.stdout.write('Vault path: ' + __dirname + "/" + this.vaultPath + "\n");
         if (!this.vaultPath || !fs.existsSync(this.vaultPath) || !fs.lstatSync(this.vaultPath).isDirectory()) {
-            throw new Error('The vault path must be set to a valid directory');
+            const error = new Error('The vault path must be set to a valid directory');
+            logger.error(error.message);
+            throw error;
         }
 
         const files = fs.readdirSync(this.vaultPath);
         const mdFiles = files.filter(file => path.extname(file) === '.md');
         if (mdFiles.length === 0) {
-            throw new Error('The vault directory must contain at least one .md file');
+            const error = new Error('The vault directory must contain at least one .md file');
+            logger.error(error.message);
+            throw error;
         }
 
         for (const file of files) {
@@ -29,7 +34,9 @@ class VaultController {
             try {
                 fs.accessSync(filePath, fs.constants.W_OK);
             } catch (err) {
-                throw new Error(`File ${file} is not writable`);
+                const error = new Error(`File ${file} is not writable`);
+                logger.error(error.message);
+                throw error;
             }
         }
     }
@@ -54,6 +61,7 @@ class VaultController {
             });
             return res.status(200).json(readableFiles);
         } catch (err) {
+            logger.error('Error reading vault directory', err);
             return res.status(500).json({ message: 'Error reading vault directory' });
         }
     }
@@ -92,6 +100,7 @@ class VaultController {
                 }
             });
         } catch (err) {
+            logger.error('Error reading file', err);
             return res.status(500).json({ message: 'Error reading file' });
         }
     }
@@ -126,6 +135,7 @@ class VaultController {
             fs.appendFileSync(filePath, content);
             return res.status(200).json({ message: 'Content appended successfully' });
         } catch (err) {
+            logger.error('Error appending to file', err);
             return res.status(500).json({ message: 'Error appending to file' });
         }
     }
@@ -155,6 +165,7 @@ class VaultController {
             fs.unlinkSync(filePath);
             return res.status(200).json({ message: 'File deleted successfully' });
         } catch (err) {
+            logger.error('Error deleting file', err);
             return res.status(500).json({ message: 'Error deleting file' });
         }
     }
@@ -188,6 +199,7 @@ class VaultController {
             fs.writeFileSync(filePath, `# ${fileTitle}\n`);
             return res.status(201).json({ message: 'File created successfully' });
         } catch (err) {
+            logger.error('Error creating file', err);
             return res.status(500).json({ message: 'Error creating file' });
         }
     }
@@ -204,6 +216,7 @@ class VaultController {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
             return res.status(200).json({ content: fileContent });
         } catch (err) {
+            logger.error('Error reading daily file', err);
             return res.status(500).json({ message: 'Error reading daily file' });
         }
     }
@@ -233,6 +246,7 @@ class VaultController {
             fs.appendFileSync(filePath, contentToAppend);
             return res.status(200).json({ message: 'Content appended successfully' });
         } catch (err) {
+            logger.error('Error appending to daily file', err);
             return res.status(500).json({ message: 'Error appending to daily file' });
         }
     }

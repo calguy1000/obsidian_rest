@@ -1,19 +1,26 @@
 import fs from 'fs';
 import path from 'path';
+import logger from './logger';
 
 export const checkEnvVariables = () => {
     if (!process.env.OBSIDIAN_VAULT_PATH) {
-        throw new Error('Environment variable OBSIDIAN_VAULT_PATH must be set');
+        const error = new Error('Environment variable OBSIDIAN_VAULT_PATH must be set');
+        logger.error(error.message);
+        throw error;
     }
 
     const obsidianVaultPath = process.env.OBSIDIAN_VAULT_PATH;
     if (!fs.existsSync(obsidianVaultPath)) {
-        throw new Error(`Obsidian vault path ${obsidianVaultPath} does not exist`);
+        const error = new Error(`Obsidian vault path ${obsidianVaultPath} does not exist`);
+        logger.error(error.message);
+        throw error;
     } else {
         try {
             fs.accessSync(obsidianVaultPath, fs.constants.W_OK);
         } catch (err) {
-            throw new Error(`Obsidian vault path ${obsidianVaultPath} is not writable`);
+            const error = new Error(`Obsidian vault path ${obsidianVaultPath} is not writable`);
+            logger.error(error.message);
+            throw error;
         }
     }
 
@@ -24,7 +31,9 @@ export const checkEnvVariables = () => {
         try {
             fs.accessSync(privateDir, fs.constants.W_OK);
         } catch (err) {
-            throw new Error(`Private directory ${privateDir} is not writable`);
+            const error = new Error(`Private directory ${privateDir} is not writable`);
+            logger.error(error.message);
+            throw error;
         }
     }
 
