@@ -274,7 +274,6 @@ class VaultController {
                 else {
                     const today = new Date().toISOString().split('T')[0];
                     fs.writeFileSync(filePath, `# ${today}\n`);
-
                 }
                 fs.appendFileSync(filePath, contentToAppend);
                 const statusCode = isNewFile ? 201 : 200;
