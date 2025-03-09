@@ -2,10 +2,9 @@
 
 This project is an Express application running in a Docker environment. It provides a simple API for file management with shared key authentication.
 
-This project does not provide an Obsidian plugin.  It directly modifies the markdown files of an Obsidian vault.
+This project does not provide an Obsidian plugin. It directly modifies the markdown files of an Obsidian vault.
 
-I wrote this package in order to be able to play with my obsidian vault from within an alexa skill so it has only the functionality I thought that I may need.  I also wrote this project because at the same time I was experimenting with node.js, express and all of that, alexa skills (python) and
-docker/docker-compose.  I have attempted to provide a reasonable amount of documentation, however your mileage may vary.
+I wrote this package in order to be able to play with my obsidian vault from within an alexa skill so it has only the functionality I thought that I may need. I also wrote this project because at the same time I was experimenting with node.js, express and all of that, alexa skills (python) and docker/docker-compose. I have attempted to provide a reasonable amount of documentation, however your mileage may vary.
 
 ## Features
 
@@ -70,15 +69,15 @@ The application uses shared key authentication. A random pre-shared key is gener
 
 ### Security
 
-This application is not to be considered as secure.  It is for use in home labs, or over other secured connections (secure tunnels, vpn's etc).  
+This application is not to be considered as secure. It is for use in home labs, or over other secured connections (secure tunnels, vpn's etc).  
 However, some small steps have been taken to provide a level of security:
     - A random pre-shared key is generated on initial setup
     - This pre-shared key must be provided to the /auth method in order to receive an authorization token
     - The authorization token is only valid for 30 minutes.
     - Only one authorization token is provided at a time.  i.e: it is stored as a static file in the private web directory.  
       If another account tries to create one (assuming they got the pre-shared key), if a token existed and was not expired, 
-      the request wouuld fail.
-    - If the pre-shared key changes on the server side, the authorization token is invalidated.  If you feel your site has been
+      the request would fail.
+    - If the pre-shared key changes on the server side, the authorization token is invalidated. If you feel your site has been
       compromised, change the pre-shared key by running 'make genkey'
 
 ### API Endpoints
@@ -144,6 +143,26 @@ However, some small steps have been taken to provide a level of security:
     - `400 Bad Request`: `{ "message": "Invalid file name" }`
     - `409 Conflict`: `{ "message": "File already exists" }`
     - `500 Internal Server Error`: `{ "message": "Error creating file" }`
+
+- `GET /api/vault/daily` - Get the content of the daily markdown file
+  - Headers:
+    - `Authorization`: `Bearer your_jwt_token`
+  - Response:
+    - `200 OK`: `{ "content": "daily file content" }`
+    - `404 Not Found`: `{ "message": "Daily file not found" }`
+    - `500 Internal Server Error`: `{ "message": "Error reading daily file" }`
+
+- `PATCH /api/vault/daily` - Append content to the daily markdown file
+  - Headers:
+    - `Authorization`: `Bearer your_jwt_token`
+  - Body:
+    - `{ "content": "content to append", "withtime": <boolean>, "undo": <boolean> }`
+  - Response:
+    - `200 OK`: `{ "message": "Content appended successfully" }`
+    - `400 Bad Request`: `{ "message": "Invalid content" }`
+    - `404 Not Found`: `{ "message": "Daily file not found" }`
+    - `500 Internal Server Error`: `{ "message": "Error appending to daily file" }`
+    - `200 OK`: `{ "message": "Last line removed successfully" }`
 
 ### License
 
