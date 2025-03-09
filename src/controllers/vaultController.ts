@@ -1,7 +1,8 @@
-import { Request, Response, Router } from 'express';
+import e, { Request, Response, Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 import logger from '../utils/logger';
+import { isEmptyBindingElement } from 'typescript';
 
 interface Config {
     apiKey: string;
@@ -221,8 +222,7 @@ class VaultController {
     }
 
     public appendDailyFile(req: Request, res: Response): Response {
-        logger.info('Appending to daily file');
-        const { content, withtime = true } = req.body as { content: string, withtime?: boolean };
+        const { content, withtime = true, undo = false } = req.body as { content: string, withtime?: boolean, undo?: boolean };
         const dailyFileName = this.getDailyFileName();
         const filePath = path.join(this.vaultPath, dailyFileName);
 
@@ -231,24 +231,58 @@ class VaultController {
             return res.status(400).json({ message: 'Invalid content' });
         }
 
-        let contentToAppend = content;
-        if (withtime) {
-            const now = new Date();
-            const timeString = now.toTimeString().split(' ')[0].slice(0, 5); // HH:MM format
-            contentToAppend = `${timeString} ${content}`;
-        }
-        contentToAppend = `- ${contentToAppend}\n`;
+        if (undo) {
+            try {
+                if (!fs.existsSync(filePath)) {
+                    return res.status(404).json({ message: 'Daily file not found' });
+                }
 
-        try {
-            if (!fs.existsSync(filePath)) {
-                const today = new Date().toISOString().split('T')[0];
-                fs.writeFileSync(filePath, `# ${today}\n`);
+                const fileContent = fs.readFileSync(filePath, 'utf-8');
+                const lines = fileContent.split('\n');
+                const lastLine = lines.length > 1 ? lines[lines.length - 2] : ''; // Last line is empty due to split
+
+                // make sure the laast line ends with the content and starts with a dash
+                if (!lastLine.startsWith('-') || !lastLine.endsWith(content)) {
+                    return res.status(400).json({ message: 'Last line does not match the provided content' });
+                }
+                else {
+                    lines.splice(lines.length - 2, 1); // Remove the last line
+                    fs.writeFileSync(filePath, lines.join('\n'));
+                    return res.status(200).json({ message: 'Last line removed successfully' });
+                }
+            } catch (err) {
+                logger.error('Error removing last line from daily file', err);
+                return res.status(500).json({ message: 'Error removing last line from daily file' });
             }
-            fs.appendFileSync(filePath, contentToAppend);
-            return res.status(200).json({ message: 'Content appended successfully' });
-        } catch (err) {
-            logger.error('Error appending to daily file', err);
-            return res.status(500).json({ message: 'Error appending to daily file' });
+        } else {
+            let contentToAppend = content;
+            if (withtime) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                contentToAppend = `${timeString} ${content}`;
+            }
+            contentToAppend = `- ${contentToAppend}\n`;
+
+            try {
+                let isNewFile = false;
+                if (!fs.existsSync(filePath)) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const title = `Daily Notes for ${today}`;
+                    fs.writeFileSync(filePath, `# ${title}\n`);
+                    isNewFile = true;
+                }
+                else {
+                    const today = new Date().toISOString().split('T')[0];
+                    fs.writeFileSync(filePath, `# ${today}\n`);
+                }
+                fs.appendFileSync(filePath, contentToAppend);
+                const statusCode = isNewFile ? 201 : 200;
+                return res.status(statusCode).json({ message: 'Content appended successfully' });
+                return res.status(200).json({ message: 'Content appended successfully' });
+            } catch (err) {
+                logger.error('Error appending to daily file', err);
+                return res.status(500).json({ message: 'Error appending to daily file' });
+            }
         }
     }
 }

@@ -27,6 +27,7 @@
             "name": "Jest All Tests",
             "program": "${workspaceFolder}/../node_modules/.bin/jest",
             "args": [
+		"--silent",
                 "--runInBand"
             ],
             "console": "integratedTerminal",
@@ -42,6 +43,7 @@
             "name": "Jest Current Tests",
             "program": "${workspaceFolder}/../node_modules/.bin/jest",
             "args": [
+		"--silent",
                 "--runTestsByPath",
                 "${relativeFile}"
             ],

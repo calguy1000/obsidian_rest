@@ -155,7 +155,7 @@ describe('VaultController - Daily File Routes', () => {
             .patch('/api/vault/daily')
             .send({ content, withtime: true })
             .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(response.body.message).toBe('Content appended successfully');
 
         const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
@@ -170,7 +170,7 @@ describe('VaultController - Daily File Routes', () => {
             .patch('/api/vault/daily')
             .send({ content, withtime: false })
             .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(response.body.message).toBe('Content appended successfully');
 
         const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
@@ -183,12 +183,33 @@ describe('VaultController - Daily File Routes', () => {
             .patch('/api/vault/daily')
             .send({ content, withtime: false })
             .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(response.body.message).toBe('Content appended successfully');
 
         const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
         const today = new Date().toISOString().split('T')[0];
-        expect(fileContent).toContain(`# ${today}\n`);
+        expect(fileContent).toContain(`# Daily Notes for ${today}\n`);
         expect(fileContent).toContain(`- ${content}\n`);
     });
+
+    it('should undo the last appended content from the daily file', async () => {
+        const content = 'New entry';
+        const response = await request(app)
+            .patch('/api/vault/daily')
+            .send({ content, withtime: false })
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(response.status).toBe(201);
+        expect(response.body.message).toBe('Content appended successfully');
+
+        const undoResponse = await request(app)
+            .patch('/api/vault/daily')
+            .send({ content, undo: true })
+            .set('authorization', `Bearer ${jwt.sign({}, config.apiKey, { expiresIn: '1h' })}`);
+        expect(undoResponse.status).toBe(200);
+        expect(undoResponse.body.message).toBe('Last line removed successfully');
+
+        const fileContent = fs.readFileSync(dailyFilePath, 'utf-8');
+        expect(fileContent).not.toContain(`- ${content}\n`);
+    });
+
 });
