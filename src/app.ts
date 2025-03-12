@@ -2,10 +2,12 @@ import express from 'express';
 import landingRoutes from './routes/landingRoutes';
 import vaultRoutes from './routes/vaultRoutes';
 import authRoutes from './routes/authRoutes';
+import listRoutes from './routes/listRoutes';
 import rateLimit from 'express-rate-limit';
 import { checkEnvVariables } from './utils/envChecks';
 import AuthController from './controllers/authController';
 import VaultController from './controllers/vaultController';
+import ListController from './controllers/listController';
 import authMiddleware from './middleware/authMiddleware';
 import logger from './utils/logger';
 
@@ -24,6 +26,7 @@ const config = checkEnvVariables();
 
 const authController = new AuthController(config);
 const vaultController = new VaultController(config);
+const listController = new ListController(config);
 const authMiddlewareInstance = authMiddleware(config);
 
 const limiter = rateLimit({
@@ -43,7 +46,8 @@ app.get('/foo', (req: express.Request, res: express.Response) => {
 });
 
 app.use('/auth', authRoutes(authController, express.Router()));
-app.use('/api', vaultRoutes(authMiddlewareInstance, vaultController, express.Router()));
+app.use('/', listRoutes(authMiddlewareInstance, listController, express.Router()));
+app.use('/', vaultRoutes(authMiddlewareInstance, vaultController, express.Router()));
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
