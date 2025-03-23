@@ -15,21 +15,20 @@ const config = {
     privateDir: '/app/private',
     apiKey: 'testapikey',
 };
+
+// Ensure the vault directory exists before we create the vault controller for testing
+if (!fs.existsSync(config.obsidianVaultPath)) {
+    fs.mkdirSync(config.obsidianVaultPath);
+}
+// Create a single dummy markdown file
+const dummyFilePath = path.join(config.obsidianVaultPath, 'dummy.md');
+fs.writeFileSync(dummyFilePath, '# Dummy File');
+
 const vaultController = new VaultController(config);
 const authMiddlewareInstance = authMiddleware(config);
 app.use('/api', vaultRoutes(authMiddlewareInstance, vaultController, express.Router()));
 
 describe('VaultController', () => {
-    beforeAll(() => {
-        // Ensure the vault directory exists
-        if (!fs.existsSync(config.obsidianVaultPath)) {
-            fs.mkdirSync(config.obsidianVaultPath);
-        }
-        // Create a single dummy markdown file
-        const dummyFilePath = path.join(config.obsidianVaultPath, 'dummy.md');
-        fs.writeFileSync(dummyFilePath, '# Dummy File');
-    });
-
     it('should list markdown files in the vault', async () => {
         // Create a test markdown file
         const testFilePath = path.join(config.obsidianVaultPath, 'test.md');
